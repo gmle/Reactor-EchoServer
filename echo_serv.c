@@ -142,13 +142,14 @@ void event_loop(void)
 {
     int i, check_pos;
     long now, duration;
-    now = time(NULL);
 
     //存放已触发的event
     struct epoll_event events[MAX_EVENTS] = {0};
     run = 1;
 
     while (run) {
+        now = time(NULL);
+
         /*
          * 一个简单的超时检测
          * 最好是采用libevent的定时器设计, 最小堆(堆顶事件)确定最小超时时间
@@ -182,6 +183,9 @@ void event_loop(void)
 
         //等待事件发生
         int howmany = epoll_wait(epfd, events, MAX_EVENTS, 1000);
+
+        if (howmany < 0)
+            errExit("epoll wait error: %s", strerror(errno));
 
         for (i = 0; i < howmany; i++) {
             event *ev = (struct _event*)events[i].data.ptr;
@@ -356,5 +360,5 @@ static int epoll_init(void)
     return fd;
 }
 
-// 该程序参考自篇blog
+// 该程序整理自这篇blog
 // var url = 'http://blog.csdn.net/sparkliang/article/details/4770655';
